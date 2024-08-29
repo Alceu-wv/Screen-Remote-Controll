@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'minha_chave_secreta'
@@ -40,4 +41,4 @@ def handle_send_audio(audio_data):
     emit('playAudio', audio_data, broadcast=True)
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=3000)
+    socketio.run(app, host='0.0.0.0', port=int(os.environ.get("PORT", 5000)), debug=True)
