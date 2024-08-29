@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Controle</title>
+</head>
+<body>
+    <h1>Painel de Controle</h1>
+    <button id="changeColorButton">Alterar Cor para Vermelho</button>
+    
+    <br><br>
+    
+    <input type="text" id="imageUrlInput" placeholder="Digite a URL da imagem" style="width: 300px;">
+    <button id="showImageButton">Mostrar Imagem</button>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        const socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        // Altera a cor para vermelho quando o botão é clicado
+        document.getElementById('changeColorButton').addEventListener('click', () => {
+            socket.emit('alterarCor', { cor: 'red' });
+        });
+
+        // Envia a URL da imagem inserida quando o botão é clicado
+        document.getElementById('showImageButton').addEventListener('click', () => {
+            const imageUrl = document.getElementById('imageUrlInput').value; // Captura o valor do campo de entrada
+            if (imageUrl) {
+                socket.emit('mostrarImagem', { url: imageUrl });
+            } else {
+                alert('Por favor, insira uma URL de imagem válida.');
+            }
+        });
+    </script>
+</body>
+</html>
