@@ -33,5 +33,11 @@ def handle_mostrar_imagem(img_data):
     print('Mostrando imagem:', img_data)
     emit('mostrarImagem', img_data, broadcast=True)
 
+# Evento para receber e transmitir áudio
+@socketio.on('sendAudio')
+def handle_send_audio(audio_data):
+    print('Recebendo áudio e transmitindo para todos os dispositivos.')
+    emit('playAudio', audio_data, broadcast=True)
+
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=3000)

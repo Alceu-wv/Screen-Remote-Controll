@@ -7,30 +7,84 @@
 </head>
 <body>
     <h1>Painel de Controle</h1>
-    <button id="changeColorButton">Alterar Cor para Vermelho</button>
-    
+
+    <!-- Grade de cores -->
+    <div>
+        <h3>Escolha uma cor para alterar o fundo:</h3>
+        <button class="colorButton" data-color="red" style="background-color: red;">Vermelho</button>
+        <button class="colorButton" data-color="green" style="background-color: green;">Verde</button>
+        <button class="colorButton" data-color="blue" style="background-color: blue;">Azul</button>
+        <button class="colorButton" data-color="yellow" style="background-color: yellow;">Amarelo</button>
+        <button class="colorButton" data-color="purple" style="background-color: purple;">Roxo</button>
+        <button class="colorButton" data-color="orange" style="background-color: orange;">Laranja</button>
+    </div>
+
     <br><br>
-    
+
+    <!-- Controle de imagem -->
     <input type="text" id="imageUrlInput" placeholder="Digite a URL da imagem" style="width: 300px;">
     <button id="showImageButton">Mostrar Imagem</button>
+
+    <br><br>
+
+    <!-- Controle de áudio -->
+    <button id="startRecording">Iniciar Gravação</button>
+    <button id="stopRecording" disabled>Parar Gravação</button>
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
         const socket = io.connect('http://' + document.domain + ':' + location.port);
 
-        // Altera a cor para vermelho quando o botão é clicado
-        document.getElementById('changeColorButton').addEventListener('click', () => {
-            socket.emit('alterarCor', { cor: 'red' });
+        // Controle de cores
+        document.querySelectorAll('.colorButton').forEach(button => {
+            button.addEventListener('click', () => {
+                const color = button.getAttribute('data-color');
+                socket.emit('alterarCor', { cor: color });
+            });
         });
 
-        // Envia a URL da imagem inserida quando o botão é clicado
+        // Controle de imagem
         document.getElementById('showImageButton').addEventListener('click', () => {
-            const imageUrl = document.getElementById('imageUrlInput').value; // Captura o valor do campo de entrada
+            const imageUrl = document.getElementById('imageUrlInput').value;
             if (imageUrl) {
                 socket.emit('mostrarImagem', { url: imageUrl });
             } else {
                 alert('Por favor, insira uma URL de imagem válida.');
             }
+        });
+
+        // Controle de gravação de áudio
+        let mediaRecorder;
+        let audioChunks = [];
+
+        document.getElementById('startRecording').addEventListener('click', async () => {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.start();
+
+            mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                const reader = new FileReader();
+                reader.readAsDataURL(audioBlob);
+                reader.onloadend = () => {
+                    const base64AudioMessage = reader.result.split(',')[1];
+                    socket.emit('sendAudio', { audio: base64AudioMessage });
+                };
+                audioChunks = [];
+            };
+
+            document.getElementById('startRecording').disabled = true;
+            document.getElementById('stopRecording').disabled = false;
+        });
+
+        document.getElementById('stopRecording').addEventListener('click', () => {
+            mediaRecorder.stop();
+            document.getElementById('startRecording').disabled = false;
+            document.getElementById('stopRecording').disabled = true;
         });
     </script>
 </body>

@@ -11,28 +11,24 @@
     <script>
         const socket = io.connect('http://' + document.domain + ':' + location.port);
 
-        // Quando o botão é clicado, cede a tela ao servidor
         document.getElementById('cedeTela').addEventListener('click', () => {
             socket.emit('cedeTela', { status: 'active' });
             alert('Você cedeu sua tela ao controlador.');
         });
 
-        // Recebe um comando para alterar a cor
         socket.on('alterarCor', (data) => {
             document.body.style.backgroundColor = data.cor;
         });
 
-        // Recebe um comando para mostrar uma imagem
         socket.on('mostrarImagem', (data) => {
-            // Exibir a imagem (assumindo que 'data.url' contém o caminho para a imagem)
             let img = document.createElement('img');
             img.src = data.url;
             document.body.appendChild(img);
         });
 
-        // Recebe feedback do servidor
-        socket.on('feedback', (data) => {
-            console.log(data);
+        socket.on('playAudio', (data) => {
+            const audio = new Audio('data:audio/wav;base64,' + data.audio);
+            audio.play();
         });
     </script>
 </body>
